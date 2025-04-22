@@ -7,5 +7,10 @@ PALAVRA_CHAVE: 'algoritmo' | 'fim_algoritmo' | 'declare' | 'literal' | 'inteiro'
         'registro' | 'fim_registro' | 'tipo' | 'procedimento' | 'var' | 'fim_procedimento' |
         'funcao' | 'retorne' | 'fim_funcao' | 'constante' | 'falso' | 'verdadeiro';
 
+OP_REL: '>'|'>='|'<'| '<='|'<>'|'=';
+OP_ARITH: '-'|'+'|'*'|'/'| '%';
+OP_LOGICO: 'e'|'ou'|'nao';
+
+
 COMMENT: '{' ~('}'|'{'|'\r'|'\n')* '}' -> skip;
 WHITE_SPACE: ([ \t\r\n]) -> skip;
