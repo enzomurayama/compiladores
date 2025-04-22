@@ -4,7 +4,11 @@
 
 package com.compiladores.analisadorlexico;
 
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.Token;
@@ -18,13 +22,38 @@ import org.antlr.v4.runtime.Token;
 public class AnalisadorLexico {
     
     //Clase principal do programa
-    public static void main(String[] args) throws IOException {
-        CharStream cs = CharStreams.fromFileName(args[0]);
-          
-        AnalisadorLexicoLA la = new AnalisadorLexicoLA(cs);
+    public static void main(String[] args){
         
-        while(la.nextToken().getType() != Token.EOF) {
-            System.out.print("");
+        try ( PrintWriter pw = new PrintWriter(new FileWriter(args[1]))) {
+            CharStream cs = null;
+            try {
+                cs = CharStreams.fromFileName(args[0]);
+            } catch (IOException ex) {
+                Logger.getLogger(AnalisadorLexico.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            AnalisadorLexicoLA la = new AnalisadorLexicoLA(cs);
+
+            Token token = null;
+
+            while((token=la.nextToken()).getType() != Token.EOF) {
+
+                int tipoToken = token.getType();
+
+                switch (tipoToken) {
+                    // Casos para os tipos de tokens 5, 6, 7, 8 (numero inteiro, numero real, identificador e cadeia)
+                    // Imprime o texto do token em ambos os campos da tupla, envolto por aspas simples
+
+                    case 5, 6, 7, 8 -> pw.println("<'" + token.getText() + "'," + AnalisadorLexicoLA.VOCABULARY.getDisplayName(token.getType()) + ">");
+
+                    // Caso padrão para todos os outros tipos de tokens
+                    // Imprime o texto do token e seu nome de exibição correspondente do vocabulário
+                    default -> pw.println("<'" + token.getText() + "','" + token.getText() + "'>");
+                }
+            }
+ 
+        } catch (IOException ex) {
+            Logger.getLogger(AnalisadorLexico.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }
