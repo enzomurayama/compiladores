@@ -90,4 +90,4 @@ Além disso, este repositório contém dois arquivos de exemplo, um de entrada (
 <br>
 
 ## 🛠 Casos de Teste
-Para este trabalho, o professor disponibilizou alguns casos de teste que podem ser encontrados [aqui](https://classroom.google.com/c/NzYyMzQ4NjY2MTg5/m/NzYyMzQ4NjY2MjMy/details).
+Para este trabalho, o professor disponibilizou alguns casos de teste que podem ser encontrados [aqui](https://drive.google.com/file/d/1SwQg-O3dG_N5okejIwTe1ujFUjffw6R_/view).
