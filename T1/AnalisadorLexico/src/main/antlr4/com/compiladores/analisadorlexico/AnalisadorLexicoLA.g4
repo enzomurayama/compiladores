@@ -13,7 +13,18 @@ OP_LOGICO: 'e'|'ou'|'nao';
 
 NUM_INT: [0-9]+ ;
 NUM_REAL: NUM_INT '.' NUM_INT;
+IDENT: ([a-zA-Z])([a-zA-Z]|[0-9])*('_')?(([a-zA-Z]|[0-9])*);
+CADEIA: '"' ~('"'|'\r'|'\n')* '"';
 
+PARENTESES: '('|')';
+COLCHETES: '[' | ']';
+INTERVALO: '..';
+ATTRIBUTE: '.';
+DELIMIT: ':';
+SEPARADOR: ',';
+ATRIBUICAO: '<-';
+ENDERECO: '&';
+POINTER: '^';
 
 COMMENT: '{' ~('}'|'{'|'\r'|'\n')* '}' -> skip;
 WHITE_SPACE: ([ \t\r\n]) -> skip;
