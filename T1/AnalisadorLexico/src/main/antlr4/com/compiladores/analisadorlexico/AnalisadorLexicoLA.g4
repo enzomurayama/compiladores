@@ -28,3 +28,8 @@ POINTER: '^';
 
 COMMENT: '{' ~('}'|'{'|'\r'|'\n')* '}' -> skip;
 WHITE_SPACE: ([ \t\r\n]) -> skip;
+
+ERRO_CHAVES_EXTRA: '}';
+ERRO_COMENT: '{' ~('}'|'{'|'\r'|'\n')* ('\r'? '\n' | EOF);
+ERRO_CADEIA: '"' ~('"'|'\r'|'\n')* ('\r'? '\n' | EOF);
+ERRO: . ;

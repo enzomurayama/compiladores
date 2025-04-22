@@ -35,15 +35,29 @@ public class AnalisadorLexico {
             AnalisadorLexicoLA la = new AnalisadorLexicoLA(cs);
 
             Token token = null;
-
+            
             while((token=la.nextToken()).getType() != Token.EOF) {
 
                 int tipoToken = token.getType();
+                
+               //Tratamento do token do tipo erro: mostra a linha do erro, o caracter invalido e para a aplicao
+                if(tipoToken == 20 || tipoToken == 23)
+                {
+                    pw.println("Linha " + token.getLine() + ": " + token.getText() + " - simbolo nao identificado" ); 
+                    break;
+                } else if(tipoToken == 21)
+                {
+                    pw.println("Linha " + token.getLine() + ": comentario nao fechado" ); 
+                    break;
+                } else if(tipoToken == 22)
+                {
+                    pw.println("Linha " + token.getLine() + ": cadeia literal nao fechada" ); 
+                    break;
+                }
 
-                switch (tipoToken) {
+                switch (tipoToken) {                    
                     // Casos para os tipos de tokens 5, 6, 7, 8 (numero inteiro, numero real, identificador e cadeia)
-                    // Imprime o texto do token em ambos os campos da tupla, envolto por aspas simples
-
+                    // Imprime o texto do token em ambos os campos da tupla, envolto por aspas simples 
                     case 5, 6, 7, 8 -> pw.println("<'" + token.getText() + "'," + AnalisadorLexicoLA.VOCABULARY.getDisplayName(token.getType()) + ">");
 
                     // Caso padrão para todos os outros tipos de tokens
