@@ -35,14 +35,19 @@ public class AnalisadorSintatico {
                 Logger.getLogger(AnalisadorSintatico.class.getName()).log(Level.SEVERE, null, ex);
             }
             
-            // Geração dos tokens que serão utilizados para as verificações.
+            // Geração dos tokens que serão utilizados para as verificações
             AnalisadorSintaticoLALexer lexer = new AnalisadorSintaticoLALexer(cs);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             
-            // Início do processo de análise.
+            // Início do processo de análise
             AnalisadorSintaticoLAParser parser = new AnalisadorSintaticoLAParser(tokens);
+            
+            // Tratamento de erros customizados
+            ErrorHandler mcel = new ErrorHandler(pw);
+            parser.removeErrorListeners(); 
+            parser.addErrorListener(mcel);
 
-            // Analisa o programa de entrada.
+            // Analisa o programa de entrada
             parser.programa();
          
         } catch(RuntimeException e){} // Exceção criada para evitar mensagens duplicadas.
