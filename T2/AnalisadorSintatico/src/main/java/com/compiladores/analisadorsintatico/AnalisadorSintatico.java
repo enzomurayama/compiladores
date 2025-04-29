@@ -24,7 +24,7 @@ public class AnalisadorSintatico {
 
     public static void main(String[] args) throws IOException{
         
-        // Abertura de arquivo para escrita
+         // Inicializa o PrintWriter para escrita no arquivo de saída
         try(PrintWriter pw = new PrintWriter(new File(args[1]))) { 
             CharStream cs = null;
             
@@ -35,21 +35,24 @@ public class AnalisadorSintatico {
                 Logger.getLogger(AnalisadorSintatico.class.getName()).log(Level.SEVERE, null, ex);
             }
             
-            // Geração dos tokens que serão utilizados para as verificações
+            // Gera os tokens léxicos a partir do código-fonte
             AnalisadorSintaticoLALexer lexer = new AnalisadorSintaticoLALexer(cs);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             
-            // Início do processo de análise
+            // Cria o parser a partir dos tokens gerados
             AnalisadorSintaticoLAParser parser = new AnalisadorSintaticoLAParser(tokens);
             
             // Tratamento de erros customizados
+            // Remove os listeners de erro padrão e adiciona o listener personalizado
             ErrorHandler mcel = new ErrorHandler(pw);
             parser.removeErrorListeners(); 
             parser.addErrorListener(mcel);
 
-            // Analisa o programa de entrada
+            // Inicia a análise sintática a partir da regra 'programa'
             parser.programa();
          
-        } catch(RuntimeException e){} // Exceção criada para evitar mensagens duplicadas.
+        } catch(RuntimeException e){
+            // Captura exceção gerada pelo ErrorHandler para evitar mensagens duplicadas
+        } 
     }
 }

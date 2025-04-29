@@ -7,7 +7,7 @@
 		idade: inteiro
 
 	{ leitura de nome e idade do teclado }
-	leia(nome)
+	leia(nome
 	leia(idade)
 
 	{ saída da mensagem na tela }
