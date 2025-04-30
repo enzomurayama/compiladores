@@ -26,7 +26,7 @@ Para facilitar seu uso, é recomendado que utilize o mesmo ambiente, pois o tuto
 
 **1. Clonar o repositório**
 
-Aqui você pode clonar onde preferir, vamos utilizar o NetBeans para acessar a esturtura do projeto.
+Aqui você pode clonar onde preferir, vamos utilizar o NetBeans para acessar a estrutura do projeto.
 ```
 git clone https://github.com/enzomurayama/compiladores.git
 ```
