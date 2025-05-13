@@ -8,12 +8,10 @@ package com.compiladores.analisadorsemantico;
  *
  * @author lucas
  */
-class EntradaTabelaDeSimbolos {
-    String nome;
-    Tipos tipo;
-
-    private EntradaTabelaDeSimbolos(String nome, Tipos tipo) {
-        this.nome = nome;
-        this.tipo = tipo;
-    }
+public enum Tipos {
+    INTEIRO,
+    REAL,
+    LITERAL,
+    LOGICO,
+    INVALIDO
 }
