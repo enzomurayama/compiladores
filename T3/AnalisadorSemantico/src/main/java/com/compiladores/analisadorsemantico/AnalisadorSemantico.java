@@ -42,12 +42,14 @@ public class AnalisadorSemantico {
             Visitor visitor = new Visitor();
             ProgramaContext arvore = parser.programa();
             
+            //Chama o visitor
+            visitor.visitPrograma(arvore);
+             
             // Tratamento de erros customizados
             // Remove os listeners de erro padrão e adiciona o listener personalizado
-           
-
-            // Inicia a análise sintática a partir da regra 'programa'
-            parser.programa();
+           Visitor.errosSemanticos.forEach((erro) -> pw.println(erro));
+           pw.println("Fim da compilacao");
+           pw.close();
          
         } catch(RuntimeException e){
             // Captura exceção gerada pelo ErrorHandler para evitar mensagens duplicadas
