@@ -4,17 +4,10 @@
  */
 package com.compiladores.analisadorsemantico;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  *
  * @author lucas
  */
-public class TabelaDeSimbolos {
-    private final Map<String, EntradaTabelaDeSimbolos> tabela;
-    
-    public TabelaDeSimbolos() {
-        this.tabela = new HashMap<>();
-    }
+class EntradaTabelaDeSimbolos {
+    public String Nome; 
 }
