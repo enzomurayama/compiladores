@@ -4,167 +4,401 @@
  */
 package com.compiladores.analisadorsemantico;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.antlr.v4.runtime.Token;
+
 /**
  *
  * @author lucas
  */
-public class Visitor extends T3ParserBaseVisitor<void> {
-    // Gerenciador de escopos aninhados
-    private Escopos escopos;
+public class Visitor extends T3ParserBaseVisitor<Void> {
+    // Tabela utilizada para armazenar os escopos gerados ao longo da análise.
+    TabelaDeSimbolos tabela;
+
+    // Geração de um conjunto de escopos que serão analisados de forma auxiliar
+    // no decorrer da análise.
+    static Escopos escoposAninhados = new Escopos();
     
-    // Método auxiliar para obter o escopo atual
-    private TabelaDeSimbolos getEscopoAtual() {
-        return escopos.obterEscopoAtual();
-    }
+    // Criação da lista que armazenará os erros identificados pelo analisador.
+    static List<String> errosSemanticos = new ArrayList<>();
+    
+    TabelaDeSimbolos tabelaEscopo;
 
-    // Método auxiliar para mapear string de tipo para TipoT3
-    private TipoT3 mapearTipo(String tipoStr, Token tipoToken) {
-        switch (tipoStr) {
+    // Método que adiciona a variável que está sendo analisado à tabela.
+    public void adicionaVariavelTabela(String nome, String tipo, Token nomeT, Token tipoT) {
+        tabelaEscopo = escoposAninhados.obterEscopoAtual();
+
+        Tipos tipoItem;
+
+        switch (tipo) {
             case "literal":
-                return TipoT3.LITERAL;
+                tipoItem = Tipos.LITERAL;
+                break;
             case "inteiro":
-                return TipoT3.INTEIRO;
+                tipoItem = Tipos.INTEIRO;
+                break;
             case "real":
-                return TipoT3.REAL;
+                tipoItem = Tipos.REAL;
+                break;
             case "logico":
-                return TipoT3.LOGICO;
+                tipoItem = Tipos.LOGICO;
+                break;
             default:
-                adicionaErroSemantico(tipoToken, "tipo " + tipoStr + " não declarado");
-                return TipoT3.INVALIDO;
+                tipoItem = Tipos.INVALIDO;
+                break;
         }
-    }
 
-    // Método auxiliar para declarar uma variável na tabela de símbolos
-    private void declararVariavel(String nome, String tipoStr, Token nomeToken, Token tipoToken) {
-        TabelaDeSimbolos escopoAtual = getEscopoAtual();
-        TipoT3 tipo = mapearTipo(tipoStr, tipoToken);
+        // Caso o tipo seja inválido, exibe a mensagem de que o tipo não foi declarado.
+        if (tipoItem == Tipos.INVALIDO)
+            adicionaErroSemantico(tipoT, "tipo " + tipo + " nao declarado");
 
-        if (tipo != TipoT3.INVALIDO) {
-            if (escopoAtual.existe(nome)) {
-                adicionaErroSemantico(nomeToken, "identificador " + nome + " já declarado anteriormente");
-            } else {
-                escopoAtual.adicionar(nome, tipo);
-            }
-        }
-    }
-
-    // Método auxiliar para verificar se uma variável foi declarada
-    private void verificarDeclaracao(String nome, Token token) {
-        if (!getEscopoAtual().existe(nome)) {
-            adicionaErroSemantico(token, "identificador " + nome + " não declarado");
-        }
+        // Verifica se a variável já foi declarada, ou seja, já foi adicionada na tabela.
+        if (!tabelaEscopo.existe(nome))
+            tabelaEscopo.adicionar(nome, tipoItem);
+        else
+            adicionaErroSemantico(nomeT, "identificador " + nome + " ja declarado anteriormente");
     }
 
     @Override
-    public Void visitPrograma(Analisador SintaticoLADistinctParser.ProgramaContext ctx) {
-        // Inicializa os escopos
-        escopos = new Escopos();
-        escopos.criarNovoEscopo();
+    public Void visitPrograma(T3ParserParser.ProgramaContext ctx) {
+        // Inicialização do programa.
+        tabela = new TabelaDeSimbolos();
         return super.visitPrograma(ctx);
     }
 
     @Override
-    public Void visitDecl_bloco(AnalisadorSintaticoLADistinctParser.Decl_blocoContext ctx) {
-        // Processa todas as declarações no bloco
-        for (AnalisadorSintaticoLADistinctParser.Decl_itemContext decl : ctx.decl_item()) {
-            visitDecl_item(decl);
-        }
-        return null;
+    public Void visitDeclaracoes(T3ParserParser.DeclaracoesContext ctx) {
+        tabela = escoposAninhados.obterEscopoAtual();
+        
+        // Verifica a declaração atual.
+        for (T3ParserParser.Decl_local_globalContext declaracao : ctx.decl_local_global())
+            visitDecl_local_global(declaracao);
+        
+        return super.visitDeclaracoes(ctx);
     }
 
     @Override
-    public Void visitDecl_item(AnalisadorSintaticoLADistinctParser.Decl_itemContext ctx) {
-        // Redireciona para a declaração específica
-        if (ctx.decl_variavel() != null) {
-            visitDecl_variavel(ctx.decl_variavel());
-        } else if (ctx.decl_constante() != null) {
-            visitDecl_constante(ctx.decl_constante());
-        } else if (ctx.decl_tipo() != null) {
-            visitDecl_tipo(ctx.decl_tipo());
-        } else if (ctx.decl_global() != null) {
-            visitDecl_global(ctx.decl_global());
-        }
-        return null;
+    public Void visitDecl_local_global(T3ParserParser.Decl_local_globalContext ctx) {
+        tabela = escoposAninhados.obterEscopoAtual();
+        
+        // Identifica se é uma declaração local ou global.
+        if (ctx.declaracao_local() != null)
+            visitDeclaracao_local(ctx.declaracao_local());
+        else if (ctx.declaracao_global() != null)
+            visitDeclaracao_global(ctx.declaracao_global());
+
+        return super.visitDecl_local_global(ctx);
     }
 
     @Override
-    public Void visitDecl_variavel(AnalisadorSintaticoLADistinctParser.Decl_variavelContext ctx) {
-        // Processa cada grupo de variáveis declarado
-        for (AnalisadorSintaticoLADistinctParser.Lista_varsContext lista : ctx.lista_vars()) {
-            String tipoStr = lista.tipo_var().getText();
-            Token tipoToken = lista.tipo_var().getStart();
+    public Void visitDeclaracao_local(T3ParserParser.Declaracao_localContext ctx) {
+        tabela = escoposAninhados.obterEscopoAtual();
 
-            for (AnalisadorSintaticoLADistinctParser.Id_listaContext id : lista.id_lista()) {
-                String nome = id.getText();
-                declararVariavel(nome, tipoStr, id.getStart(), tipoToken);
+        String tipoVariavel;
+        String nomeVariavel;
+
+        // Tenta identificar uma declaração
+        if (ctx.getText().contains("declare")) {
+            tipoVariavel = ctx.variavel().tipo().getText();
+
+            // Adiciona a variável atual na tabela (a verificação de variável repetida ocorre
+            // no método adicionaVariavelTabela.
+            for (T3ParserParser.IdentificadorContext ident : ctx.variavel().identificador()) {
+                nomeVariavel = ident.getText();
+                adicionaVariavelTabela(nomeVariavel, tipoVariavel, ident.getStart(), ctx.variavel().tipo().getStart());
             }
         }
-        return null;
+
+        return super.visitDeclaracao_local(ctx);
     }
 
     @Override
-    public Void visitDecl_constante(AnalisadorSintaticoLADistinctParser.Decl_constanteContext ctx) {
-        String nome = ctx.IDENT().getText();
-        String tipoStr = ctx.tipo_basico().getText();
-        Token nomeToken = ctx.IDENT().getSymbol();
-        Token tipoToken = ctx.tipo_basico().getStart();
+    public Void visitCmdLeia(T3ParserParser.CmdLeiaContext ctx) {
+        tabela = escoposAninhados.obterEscopoAtual();
 
-        declararVariavel(nome, tipoStr, nomeToken, tipoToken);
-        return null;
+        for (T3ParserParser.IdentificadorContext id : ctx.identificador())
+            // Verifica se a variável já foi declarada.
+            if (!tabela.existe(id.getText()))
+                adicionaErroSemantico(id.getStart(), "identificador " + id.getText() + " nao declarado");
+
+        return super.visitCmdLeia(ctx);
     }
 
     @Override
-    public Void visitCmd_leia(AnalisadorSintaticoLADistinctParser.Cmd_leiaContext ctx) {
-        // Verifica se todas as variáveis lidas foram declaradas
-        for (AnalisadorSintaticoLADistinctParser.Id_listaContext id : ctx.id_lista()) {
-            verificarDeclaracao(id.getText(), id.getStart());
-        }
-        return null;
+    public Void visitCmdEscreva(T3ParserParser.CmdEscrevaContext ctx) {
+        tabela = escoposAninhados.obterEscopoAtual();
+        
+        Tipos tipo;
+
+        for (T3ParserParser.ExpressaoContext expressao : ctx.expressao())
+            tipo = verificarTipo(tabela, expressao);
+
+        return super.visitCmdEscreva(ctx);
     }
 
     @Override
-    public Void visitCmd_escreva(AnalisadorSintaticoLADistinctParser.Cmd_escrevaContext ctx) {
-        // Verifica o tipo de cada expressão escrita
-        for (AnalisadorSintaticoLADistinctParser.ExpressaoContext expr : ctx.expressao()) {
-            verificarTipo(getEscopoAtual(), expr);
-        }
-        return null;
+    public Void visitCmdEnquanto(T3ParserParser.CmdEnquantoContext ctx) {
+        tabela = escoposAninhados.obterEscopoAtual();
+        
+        Tipos tipo = verificarTipo(tabela, ctx.expressao());
+        
+        return super.visitCmdEnquanto(ctx);
     }
 
     @Override
-    public Void visitCmd_enquanto(AnalisadorSintaticoLADistinctParser.Cmd_enquantoContext ctx) {
-        // Verifica o tipo da expressão condicional
-        verificarTipo(getEscopoAtual(), ctx.expressao());
-        return super.visitCmd_enquanto(ctx);
-    }
-
-    @Override
-    public Void visitCmd_atribuicao(AnalisadorSintaticoLADistinctParser.Cmd_atribuicaoContext ctx) {
-        TabelaDeSimbolos escopoAtual = getEscopoAtual();
-        String nomeVar = ctx.id_lista().getText();
-        Token varToken = ctx.id_lista().getStart();
-        TipoT3 tipoExpr = verificarTipo(escopoAtual, ctx.expressao());
-
-        if (tipoExpr != TipoT3.INVALIDO) {
-            // Verifica se a variável foi declarada
-            if (!escopoAtual.existe(nomeVar)) {
-                adicionaErroSemantico(varToken, "identificador " + nomeVar + " não declarado");
+    public Void visitCmdAtribuicao(T3ParserParser.CmdAtribuicaoContext ctx) {
+        tabela = escoposAninhados.obterEscopoAtual();
+        
+        Tipos tipoExpressao = verificarTipo(tabela, ctx.expressao());
+        
+        String varNome = ctx.identificador().getText();
+        
+        if (tipoExpressao != Tipos.INVALIDO) {
+            // Caso a variável não tenha sido declarada, informa o erro.
+            if (!tabela.existe(varNome)) {
+                adicionaErroSemantico(ctx.identificador().getStart(), "identificador " + ctx.identificador().getText() + " nao declarado");
             } else {
-                TipoT3 tipoVar = verificarTipo(escopoAtual, nomeVar);
-
-                // Verifica compatibilidade para tipos numéricos
-                if (tipoVar == TipoT3.INTEIRO || tipoVar == TipoT3.REAL) {
-                    if (!verificaCompatibilidade(tipoVar, tipoExpr)) {
-                        if (tipoExpr != TipoT3.INTEIRO) {
-                            adicionaErroSemantico(varToken, "atribuição não compatível para " + nomeVar);
+                // Caso contrário, identifica o tipo da variável para as condições posteriores.
+                Tipos varTipo = verificarTipo(tabela, varNome);
+                
+                // Caso o tipo seja inteiro ou real, é utilizada a função verificaCompatibilidade para verificar
+                // se o valor a ser trabalhado é real ou não (mais informações sobre a função podem ser encontradas
+                // no arquivo VisitorUtils.java.
+                if (varTipo == Tipos.INTEIRO || varTipo == Tipos.REAL) {
+                    if (!verificaCompatibilidade(varTipo, tipoExpressao)) {
+                        // Caso o tipo da expressão (restante da parcela sendo analisada) seja diferente de inteiro,
+                        // não é possível tratar o valor como um número real, logo, os tipos são incompatíveis, pois
+                        // seria a situação de estar comparando um número com um literal, por exemplo.
+                        if (tipoExpressao != Tipos.INTEIRO) {
+                            adicionaErroSemantico(ctx.identificador().getStart(), "atribuicao nao compativel para " + ctx.identificador().getText());
                         }
                     }
-                } else if (tipoVar != tipoExpr) {
-                    // Verifica compatibilidade para outros tipos
-                    adicionaErroSemantico(varToken, "atribuição não compatível para " + nomeVar);
-                }
+                // Caso a expressão analisada não tenha números que precisem ser tratados de maneira especial,
+                // apenas verifica se os tipos são diferentes.
+                } else if (varTipo != tipoExpressao)
+                    adicionaErroSemantico(ctx.identificador().getStart(), "atribuicao nao compativel para " + ctx.identificador().getText());
             }
         }
-        return null;
+        
+        return super.visitCmdAtribuicao(ctx);
+    }
+    
+    
+    
+
+    // Método auxiliar utilizado para adicionar um novo erro identificado na lista.
+    public static void adicionaErroSemantico(Token tok, String mensagem) {
+        int linha = tok.getLine();
+        
+        // Verifica se o erro já foi identificado para poder adicioná-lo à lista.
+        if (!errosSemanticos.contains("Linha " + linha + ": " + mensagem)) 
+            errosSemanticos.add(String.format("Linha %d: %s", linha, mensagem));
+    }
+    
+    // Método auxiliar que verifica a compatibilidade entre operadores aritméticos.
+    // Caso a operação envolva pelo menos um valor real, a operação deve ser tratada
+    // como uma operação entre números reais, mesmo que um deles seja um inteiro.
+    public static boolean verificaCompatibilidade(Tipos T1, Tipos T2) {
+        boolean flag = false;
+        
+        if (T1 == Tipos.INTEIRO && T2 == Tipos.REAL)
+            flag = true;
+        else if (T1 == Tipos.REAL && T2 == Tipos.INTEIRO)
+            flag = true;
+        else if (T1 == Tipos.REAL && T2 == Tipos.REAL)
+            flag = true;
+        
+        return flag;
+    }
+    
+    // Método auxiliar que verifica a compatibilidade entre operadores para tratá-los
+    // como uma operação lógica.
+    public static boolean verificaCompatibilidadeLogica(Tipos T1, Tipos T2) {
+        boolean flag = false;
+        
+        if (T1 == Tipos.INTEIRO && T2 == Tipos.REAL)
+            flag = true;
+        else if (T1 == Tipos.REAL && T2 == Tipos.INTEIRO)
+            flag = true;
+
+        return flag;
+    }
+                    
+    public static Tipos verificarTipo(TabelaDeSimbolos tabela, T3ParserParser.Exp_aritmeticaContext ctx) {
+        // A variável que será retornada ao fim da execução é inicializada com o tipo
+        // do primeiro elemento que será verificado, para fins de comparação.
+        Tipos tipoRetorno = verificarTipo(tabela, ctx.termo().get(0));
+                
+        for (var termoArit : ctx.termo()) {
+            // Esta outra variável recebe os tipos dos outros termos da expressão.
+            Tipos tipoAtual = verificarTipo(tabela, termoArit);
+            
+            // Com o auxílio do método declarado anteriormente, o programa verifica se deve tratar a
+            // verificação atual como uma operação entre números reais.
+            if ((verificaCompatibilidade(tipoAtual, tipoRetorno)) && (tipoAtual != Tipos.INVALIDO))
+                tipoRetorno = Tipos.REAL;
+            else
+                tipoRetorno = tipoAtual;
+        }
+
+        return tipoRetorno;
+    }
+
+    public static Tipos verificarTipo(TabelaDeSimbolos tabela, T3ParserParser.TermoContext ctx) {
+        // A variável que será retornada ao fim da execução é inicializada com o tipo
+        // do primeiro elemento que será verificado, para fins de comparação.
+        Tipos tipoRetorno = verificarTipo(tabela, ctx.fator().get(0));
+                
+        for (T3ParserParser.FatorContext fatorArit : ctx.fator()) {
+            // Esta outra variável recebe os tipos dos outros termos da expressão.
+            Tipos tipoAtual = verificarTipo(tabela, fatorArit);
+            
+            // Com o auxílio do método declarado anteriormente, o programa verifica se deve tratar a
+            // verificação atual como uma operação entre números reais.
+            if ((verificaCompatibilidade(tipoAtual, tipoRetorno)) && (tipoAtual != Tipos.INVALIDO))
+                tipoRetorno = Tipos.REAL;
+            else
+                tipoRetorno = tipoAtual;
+        }
+        
+        return tipoRetorno;
+    }
+
+    public static Tipos verificarTipo(TabelaDeSimbolos tabela, T3ParserParser.FatorContext ctx) {
+        Tipos tipoRetorno = null;
+        
+        for (T3ParserParser.ParcelaContext parcela : ctx.parcela())
+            tipoRetorno = verificarTipo(tabela, parcela);
+
+        return tipoRetorno;
+    }
+
+    public static Tipos verificarTipo(TabelaDeSimbolos tabela, T3ParserParser.ParcelaContext ctx) {
+        // Identifica se é uma parcela unária ou não unária.
+        if (ctx.parcela_unario() != null)
+            return verificarTipo(tabela, ctx.parcela_unario());
+        else
+            return verificarTipo(tabela, ctx.parcela_nao_unario());
+    }
+
+    public static Tipos verificarTipo(TabelaDeSimbolos tabela, T3ParserParser.Parcela_unarioContext ctx) {
+        Tipos tipoRetorno;
+        String nome;
+        
+        if (ctx.identificador() != null) {
+            // Obtém o nome da variável atual.
+            nome = ctx.identificador().getText();
+            
+            // Caso a variável já tenha sido declarada, apenas retorna o tipo associado a ela.
+            if (tabela.existe(nome))
+                tipoRetorno = tabela.verificar(nome);
+            // Caso contrário, utiliza uma tabela auxiliar para prosseguir com a verificação. Se a variável não
+            // tiver sido declarada, utiliza o método adicionaErroSemantico para verificar se o erro já foi
+            // exibido e, caso ainda não tenha sido, o adiciona à lista.
+            else {
+                TabelaDeSimbolos tabelaAux = Visitor.escoposAninhados.percorrerEscoposAninhados().get(Visitor.escoposAninhados.percorrerEscoposAninhados().size() - 1);
+                if (!tabelaAux.existe(nome)) {
+                    adicionaErroSemantico(ctx.identificador().getStart(), "identificador " + ctx.identificador().getText() + " nao declarado");
+                    tipoRetorno = Tipos.INVALIDO;
+                } else 
+                    tipoRetorno = tabelaAux.verificar(nome);
+            }
+        } else if (ctx.NUM_INT() != null)
+            tipoRetorno = Tipos.INTEIRO;
+        else if (ctx.NUM_REAL() != null)
+            tipoRetorno = Tipos.REAL;
+        else
+            tipoRetorno = verificarTipo(tabela, ctx.expressao().get(0));
+
+        return tipoRetorno;
+    }
+
+    public static Tipos verificarTipo(TabelaDeSimbolos tabela, T3ParserParser.Parcela_nao_unarioContext ctx) {
+        Tipos tipoRetorno;
+        String nome;
+
+        // Utiliza uma lógica semelhante à verificação de tipo anterior, verificando a existência da variável
+        // e tentando adicioná-la à lista de erros.
+        if (ctx.identificador() != null) {
+            nome = ctx.identificador().getText();
+        
+            if (!tabela.existe(nome)) {
+                adicionaErroSemantico(ctx.identificador().getStart(), "identificador " + ctx.identificador().getText() + " nao declarado");
+                tipoRetorno = Tipos.INVALIDO;
+            } else 
+                tipoRetorno = tabela.verificar(ctx.identificador().getText());
+        } else
+            tipoRetorno = Tipos.LITERAL;
+
+        return tipoRetorno;
+    }
+
+    public static Tipos verificarTipo(TabelaDeSimbolos tabela, T3ParserParser.ExpressaoContext ctx) {
+        Tipos tipoRetorno = verificarTipo(tabela, ctx.termo_logico(0));
+
+        // Para expressões lógicas, a ideia resume-se apenas em verificar se os tipos analisados
+        // são diferentes.
+        for (T3ParserParser.Termo_logicoContext termoLogico : ctx.termo_logico()) {
+            Tipos tipoAtual = verificarTipo(tabela, termoLogico);
+            if (tipoRetorno != tipoAtual && tipoAtual != Tipos.INVALIDO)
+                tipoRetorno = Tipos.INVALIDO;
+        }
+
+        return tipoRetorno;
+    }
+
+    public static Tipos verificarTipo(TabelaDeSimbolos tabela, T3ParserParser.Termo_logicoContext ctx) {
+        Tipos tipoRetorno = verificarTipo(tabela, ctx.fator_logico(0));
+
+        // Para expressões lógicas, a ideia resume-se apenas em verificar se os tipos analisados
+        // são diferentes.
+        for (T3ParserParser.Fator_logicoContext fatorLogico : ctx.fator_logico()) {
+            Tipos tipoAtual = verificarTipo(tabela, fatorLogico);
+            if (tipoRetorno != tipoAtual && tipoAtual != Tipos.INVALIDO)
+                tipoRetorno = Tipos.INVALIDO;
+        }
+        return tipoRetorno;
+    }
+
+    public static Tipos verificarTipo(TabelaDeSimbolos tabela, T3ParserParser.Fator_logicoContext ctx) {
+        Tipos tipoRetorno = verificarTipo(tabela, ctx.parcela_logica());
+        return tipoRetorno;
+
+    }
+
+    public static Tipos verificarTipo(TabelaDeSimbolos tabela, T3ParserParser.Parcela_logicaContext ctx) {
+        Tipos tipoRetorno;
+
+        if (ctx.exp_relacional() != null)
+            tipoRetorno = verificarTipo(tabela, ctx.exp_relacional());
+         else
+            tipoRetorno = Tipos.LOGICO;
+
+        return tipoRetorno;
+
+    }
+
+    public static Tipos verificarTipo(TabelaDeSimbolos tabela, T3ParserParser.Exp_relacionalContext ctx) {
+        Tipos tipoRetorno = verificarTipo(tabela, ctx.exp_aritmetica().get(0));
+
+        if (ctx.exp_aritmetica().size() > 1) {
+            Tipos tipoAtual = verificarTipo(tabela, ctx.exp_aritmetica().get(1));
+
+            // Semelhante ao que foi feito com as expressões aritméticas, ocorre uma verificação
+            // para saber se a expressão atual pode ser tratada como uma operação lógica.
+            if (tipoRetorno == tipoAtual || verificaCompatibilidadeLogica(tipoRetorno, tipoAtual))
+                tipoRetorno = Tipos.LOGICO;
+            else
+                tipoRetorno = Tipos.INVALIDO;
+        }
+
+        return tipoRetorno;
+
+    }
+
+    // Verificação padrão de tipos de variáveis a partir da tabela.
+    public static Tipos verificarTipo(TabelaDeSimbolos tabela, String nomeVar) {
+        return tabela.verificar(nomeVar);
     }
 }

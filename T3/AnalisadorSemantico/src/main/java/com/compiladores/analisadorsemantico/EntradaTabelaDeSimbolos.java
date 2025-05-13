@@ -12,7 +12,7 @@ class EntradaTabelaDeSimbolos {
     String nome;
     Tipos tipo;
 
-    private EntradaTabelaDeSimbolos(String nome, Tipos tipo) {
+    public EntradaTabelaDeSimbolos(String nome, Tipos tipo) {
         this.nome = nome;
         this.tipo = tipo;
     }

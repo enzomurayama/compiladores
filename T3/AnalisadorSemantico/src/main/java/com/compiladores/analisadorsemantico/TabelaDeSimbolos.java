@@ -17,4 +17,16 @@ public class TabelaDeSimbolos {
     public TabelaDeSimbolos() {
         this.tabela = new HashMap<>();
     }
+    
+    public Tipos verificar(String nome) {
+        return tabela.get(nome).tipo;
+    }
+
+    public void adicionar(String nome, Tipos tipo) {
+        tabela.put(nome, new EntradaTabelaDeSimbolos(nome, tipo));
+    }
+
+    public boolean existe(String nome) {
+        return tabela.containsKey(nome);
+    }
 }
