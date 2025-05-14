@@ -4,10 +4,6 @@
  */
 package com.compiladores.analisadorsemantico;
 
-/**
- *
- * @author lucas
- */
 public enum Tipos {
     INTEIRO,
     REAL,

@@ -8,10 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.antlr.v4.runtime.Token;
 
-/**
- *
- * @author lucas
- */
 public class Visitor extends T3ParserBaseVisitor<Void> {
     TabelaDeSimbolos tabela;
 
