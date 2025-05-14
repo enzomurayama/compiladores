@@ -4,14 +4,16 @@
  */
 package com.compiladores.analisadorsemantico;
 
+
 /**
- *
- * @author lucas
+ * Classe que representa uma entrada na tabela de símbolos
+ * Cada entrada tem um nome e um tipo
  */
 class EntradaTabelaDeSimbolos {
     String nome;
     Tipos tipo;
-
+    
+    // Construtor da classe
     public EntradaTabelaDeSimbolos(String nome, Tipos tipo) {
         this.nome = nome;
         this.tipo = tipo;

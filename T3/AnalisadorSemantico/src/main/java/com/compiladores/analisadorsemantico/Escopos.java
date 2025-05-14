@@ -7,10 +7,7 @@ package com.compiladores.analisadorsemantico;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- *
- * @author lucas
- */
+// Classe que gerencia os escopos
 public class Escopos {
     private final LinkedList<TabelaDeSimbolos> pilhaDeTabelas;
 

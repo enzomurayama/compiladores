@@ -17,7 +17,9 @@ import org.antlr.v4.runtime.CommonTokenStream;
 
 /**
  *
- * @author lucas
+ * @author Lucas Sciarra Gonçalves, Enzo Youji Murayama, Gabriel Henrique Alves Zago
+ * 
+ * Analisador semântico para a Linguagem Algoritmica desenvolvida pelo professor Jander do DC-UFSCAR
  */
 public class AnalisadorSemantico {
 
