@@ -1,6 +1,6 @@
-# Analisador Sintático
+# Analisador Semântico
 
-Este projeto é um analisador sintático em Java utilizando ANTLR 4 e Maven.
+Este projeto é um analisador semântico em Java utilizando ANTLR 4 e Maven.
 
 O guia a seguir apresenta os requisitos e as etapas para compilar e executar o projeto corretamente.
 
@@ -38,7 +38,7 @@ Para facilitar o trabalho, abra o projeto com o NetBeans:
 
 - Abra o NetBeans
 - Vá em File > Open Project...
-- Selecione a pasta clonada do repositório com o projeto (compiladores/T2/AnalisadorSintatico) e clique em Open Project.
+- Selecione a pasta clonada do repositório com o projeto (compiladores/T3/AnalisadorSemantico) e clique em Open Project.
 - O NetBeans detectará automaticamente o projeto Maven e configurará as dependências.
 
 <br>
@@ -65,7 +65,7 @@ Para compilar, podemos utilizar a própria ferramenta do NetBeans. Dentro da IDE
 
 **4. Execução**
 
-A execução do analisador sintático utiliza um arquivo de entrada, simulando um programa na Linguagem Algorítmica (desenvolvida pelo prof. Jander, no âmbito do DC/UFSCar), e produz um arquivo de saída, com o erro identificado neste programa.
+A execução do analisador semântico utiliza um arquivo de entrada, simulando um programa na Linguagem Algorítmica (desenvolvida pelo prof. Jander, no âmbito do DC/UFSCar), e produz um arquivo de saída, com os erros identificados neste programa.
 
 Então, em linha de comando:
 
@@ -74,13 +74,13 @@ java -jar [caminho-para-programa.jar] [caminho-para-arquivo-entrada.txt] [caminh
 ```
 <br>
 
-> O *programa.jar*, após compilado, está localizado em AnalisadorSintatico/target/AnalisadorSintatico-1.0-SNAPSHOT-jar-with-dependencies.jar
+> O *programa.jar*, após compilado, está localizado em AnalisadorSemantico/target/AnalisadorSemantico-1.0-SNAPSHOT-jar-with-dependencies.jar
 
 <br>
 
 Exemplo de comando para a execução do programa:
 ```
-c:\java -jar c:\compilador\AnalisadorSintatico-1.0-SNAPSHOT-jar-with-dependencies.jar c:\casos-de-teste\arquivo1.txt c:\temp\saida.txt
+c:\java -jar c:\compilador\AnalisadorSemantico-1.0-SNAPSHOT-jar-with-dependencies.jar c:\casos-de-teste\arquivo1.txt c:\temp\saida.txt
 ```
 
 <br>
