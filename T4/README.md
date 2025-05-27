@@ -1,6 +1,8 @@
-# Analisador Semântico
+# Analisador Semântico pt.2
 
-Este projeto é um analisador semântico em Java utilizando ANTLR 4 e Maven.
+Este projeto implementa um analisador semântico para a **Linguagem Algorítmica**, uma linguagem educacional desenvolvida pelo professor Jander (DC/UFSCar). Ele analisa arquivos de código fonte escritos nessa linguagem e aponta erros semânticos, como uso de variáveis não declaradas, tipos incompatíveis, etc.
+
+Este trabalho é a **parte 4 (T4)** da disciplina de Compiladores e utiliza **ANTLR 4** para geração de analisadores e **Maven** como sistema de build.
 
 O guia a seguir apresenta os requisitos e as etapas para compilar e executar o projeto corretamente.
 
@@ -8,6 +10,10 @@ O guia a seguir apresenta os requisitos e as etapas para compilar e executar o p
 
 ## 📋 Requisitos
 Antes de mais nada, certifique-se de ter os seguintes programas instalados:
+
+![Java](https://img.shields.io/badge/java-22+-orange)
+![Maven](https://img.shields.io/badge/maven-3.6+-blue)
+![Git](https://img.shields.io/badge/Git-installed-orange?logo=git)
 
 - Java JDK (versão 22 ou superior)
 - Apache Maven (versão 3.6 ou superior)
@@ -38,7 +44,7 @@ Para facilitar o trabalho, abra o projeto com o NetBeans:
 
 - Abra o NetBeans
 - Vá em File > Open Project...
-- Selecione a pasta clonada do repositório com o projeto (compiladores/T3/AnalisadorSemantico) e clique em Open Project.
+- Selecione a pasta clonada do repositório com o projeto (compiladores/T4/AnalisadorSemantico) e clique em Open Project.
 - O NetBeans detectará automaticamente o projeto Maven e configurará as dependências.
 
 <br>
