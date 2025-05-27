@@ -9,6 +9,10 @@ O guia a seguir apresenta os requisitos e as etapas para compilar e executar o p
 ## 📋 Requisitos
 Antes de mais nada, certifique-se de ter os seguintes programas instalados:
 
+![Java](https://img.shields.io/badge/java-22+-orange)
+![Maven](https://img.shields.io/badge/maven-3.6+-blue)
+![Git](https://img.shields.io/badge/Git-installed-orange?logo=git)
+
 - Java JDK (versão 22 ou superior)
 - Apache Maven (versão 3.6 ou superior)
 - Git (para clonar o repositório)
