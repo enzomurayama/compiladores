@@ -15,4 +15,5 @@ Trabalho desenvolvido por:
 ## Índice
 1. [[T1]](https://github.com/enzomurayama/compiladores/tree/main/T1) Analisador Léxico
 2. [[T2]](https://github.com/enzomurayama/compiladores/tree/main/T2) Analisador Sintático
-3. 
+3. [[T3]](https://github.com/enzomurayama/compiladores/tree/main/T3) Analisador Semântico
+4. [[T4]](https://github.com/enzomurayama/compiladores/tree/main/T4) Analisador Semântico pt.2
