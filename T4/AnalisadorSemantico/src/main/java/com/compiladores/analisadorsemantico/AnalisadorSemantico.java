@@ -1,11 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- */
-
 package com.compiladores.analisadorsemantico;
 
 import com.compiladores.analisadorsemantico.T4GrammarParser.ProgramaContext;
-import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.logging.Level;
@@ -24,7 +20,7 @@ public class AnalisadorSemantico {
 
     public static void main(String[] args) throws IOException {
          // Inicializa o PrintWriter para escrita no arquivo de saída
-        try(PrintWriter pw = new PrintWriter(new File(args[1]))) { 
+        try(PrintWriter pw = new PrintWriter(new FileWriter(args[1]))) { 
             CharStream cs = null;
             
             // Tenta carregar o conteúdo do arquivo de entrada como um fluxo de caracteres
@@ -34,16 +30,16 @@ public class AnalisadorSemantico {
                 Logger.getLogger(AnalisadorSemantico.class.getName()).log(Level.SEVERE, null, ex);
             }
             
-            // Gera os tokens léxicos a partir do código-fonte
+            // Analisador léxico - Gera os tokens léxicos a partir do código-fonte
             T4GrammarLexer lexer = new T4GrammarLexer(cs);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             
-            // Cria o parser a partir dos tokens gerados
+            // Analisador sintático - Cria o parser a partir dos tokens gerados
             T4GrammarParser parser = new T4GrammarParser(tokens);
             Visitor visitor = new Visitor();
             ProgramaContext arvore = parser.programa();
             
-            //Chama o visitor
+            // Chama o visitor
             visitor.visitPrograma(arvore);
              
             // Tratamento de erros customizados

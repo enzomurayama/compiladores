@@ -1,12 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.compiladores.analisadorsemantico;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import static com.compiladores.analisadorsemantico.Visitor.reduzNome;
 
 public class TabelaDeSimbolos {
     // Mapa que associa nomes de identificadores (variáveis, funções, etc.) às suas entradas na tabela de símbolos
@@ -19,16 +15,22 @@ public class TabelaDeSimbolos {
        
     // Retorna o tipo associado a um identificador, assumindo que ele já existe
     public Tipos verificar(String nome) {
+        // Remoção do índice de um vetor.
+        nome = reduzNome(nome, "[");
         return tabela.get(nome).tipo;
     }
     
     // Adiciona uma nova entrada à tabela com o nome e tipo fornecidos
-    public void adicionar(String nome, Tipos tipo) {
-        tabela.put(nome, new EntradaTabelaDeSimbolos(nome, tipo));
+    public void adicionar(String nome, Tipos tipo, TiposEntrada tipoEntrada) {
+        // Remoção do índice de um vetor.
+        nome = reduzNome(nome, "[");
+        tabela.put(nome, new EntradaTabelaDeSimbolos(nome, tipo, tipoEntrada));
     }
     
     // Verifica se o identificador já foi declarado neste escopo
     public boolean existe(String nome) {
+        // Remoção do índice de um vetor.
+        nome = reduzNome(nome, "[");
         return tabela.containsKey(nome);
     }
 }
