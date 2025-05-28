@@ -44,9 +44,9 @@ public class AnalisadorSemantico {
              
             // Tratamento de erros customizados
             // Remove os listeners de erro padrão e adiciona o listener personalizado
-           Visitor.errosSemanticos.forEach((erro) -> pw.println(erro));
-           pw.println("Fim da compilacao");
-           pw.close();
+            AnalisadorSemanticoUtils.errosSemanticos.forEach((erro) -> pw.println(erro));
+            pw.println("Fim da compilacao");
+            pw.close();
          
         } catch(RuntimeException e){
             // Captura exceção gerada pelo ErrorHandler para evitar mensagens duplicadas

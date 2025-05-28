@@ -2,7 +2,7 @@ package com.compiladores.analisadorsemantico;
 
 import java.util.HashMap;
 import java.util.Map;
-import static com.compiladores.analisadorsemantico.Visitor.reduzNome;
+import static com.compiladores.analisadorsemantico.AnalisadorSemanticoUtils.reduzNome;
 
 public class TabelaDeSimbolos {
     // Mapa que associa nomes de identificadores (variáveis, funções, etc.) às suas entradas na tabela de símbolos

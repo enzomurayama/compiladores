@@ -21,6 +21,7 @@ com/compiladores/analisadorsemantico/T4GrammarParser$Parcela_unarioContext.class
 com/compiladores/analisadorsemantico/T4GrammarParser$Op_unarioContext.class
 com/compiladores/analisadorsemantico/T4GrammarParser$CmdFacaContext.class
 com/compiladores/analisadorsemantico/T4GrammarParser$CmdChamadaContext.class
+com/compiladores/analisadorsemantico/AnalisadorSemanticoUtils.class
 com/compiladores/analisadorsemantico/T4GrammarParser$Declaracao_globalContext.class
 com/compiladores/analisadorsemantico/T4GrammarParser$Parcela_logicaContext.class
 com/compiladores/analisadorsemantico/T4GrammarBaseVisitor.class
