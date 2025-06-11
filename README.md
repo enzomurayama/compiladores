@@ -17,3 +17,4 @@ Trabalho desenvolvido por:
 2. [[T2]](https://github.com/enzomurayama/compiladores/tree/main/T2) Analisador Sintático
 3. [[T3]](https://github.com/enzomurayama/compiladores/tree/main/T3) Analisador Semântico
 4. [[T4]](https://github.com/enzomurayama/compiladores/tree/main/T4) Analisador Semântico pt.2
+5. [[T5]](https://github.com/enzomurayama/compiladores/tree/main/T5) Gerador de Código em C
