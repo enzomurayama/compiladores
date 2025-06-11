@@ -6,18 +6,26 @@ import static com.compiladores.analisadorsemantico.AnalisadorSemanticoUtils.veri
  * Classe que implementa o gerador de código C.
  */
 public class GeradorC extends T5GrammarBaseVisitor<Void> {
-    // Armazena o código C gerado. 
+    // Armazena o código C gerado.
     StringBuilder saida = new StringBuilder();
     
-    // Tabela de símbolos para o escopo global. 
+    // Tabela de símbolos para o escopo global.
     TabelaDeSimbolos tabela = new TabelaDeSimbolos();
     
-    // Gerencia escopos aninhados para declarações e blocos. 
+    // Gerencia escopos aninhados para declarações e blocos.
     Escopos escopos = new Escopos();
     
-    // Gerencia escopos aninhados para análise semântica. 
+    // Gerencia escopos aninhados para análise semântica.
     static Escopos escoposAninhados = new Escopos();
     
+    // Nível atual de indentação (4 espaços por nível).
+    private int indentLevel = 0;
+    
+    // Retorna a string de indentação com base no nível atual.
+    private String indent() {
+        return "    ".repeat(indentLevel);
+    }
+
     /**
      * Converte um tipo da linguagem T5 para o tipo correspondente em C.
      * @param tipoAuxT5 Tipo da linguagem T5 (ex.: INTEIRO, LITERAL).
@@ -221,10 +229,13 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
         saida.append("#include <stdlib.h>\n\n");
          
         visitDeclaracoes(ctx.declaracoes());
-        saida.append("\nint main() {\n");
+        saida.append("\n");
+        saida.append("int main() {\n");
+        indentLevel++;
         visitCorpo(ctx.corpo());
-        saida.append("\nreturn 0;\n}\n");
-
+        saida.append(indent()).append("return 0;\n");
+        indentLevel--;
+        saida.append("}\n");
         return null;
     }
     
@@ -235,23 +246,22 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
     @Override
     public Void visitDeclaracao_local(T5GrammarParser.Declaracao_localContext ctx) {
         if (ctx.valor_constante() != null) {
-            // Define constante usando #define
             String str = "#define " + ctx.IDENT().getText() + " " + ctx.valor_constante().getText() + "\n";
-            saida.append(str);
+            saida.append(indent()).append(str);
         } else if (ctx.tipo() != null) {
-            // Declara tipo personalizado (struct) e adiciona à tabela de símbolos
             TabelaDeSimbolos escopoAtual = escopos.obterEscopoAtual();
             escopos.criarNovoEscopo();
-            saida.append("typedef struct {\n");
+            saida.append(indent()).append("typedef struct {\n");
+            indentLevel++;
             super.visitRegistro(ctx.tipo().registro());
+            indentLevel--;
             escopos.abandonarEscopo();
             escopoAtual.adicionar(ctx.IDENT().getText(), Tipos.REGISTRO, TiposEntrada.VARIAVEL);
             String str = "} " + ctx.IDENT().getText() + ";\n";
-            saida.append(str);
+            saida.append(indent()).append(str);
         } else if (ctx.variavel() != null) {
             visitVariavel(ctx.variavel());
         }
-        
         return null;
     }
     
@@ -298,24 +308,24 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
 
                 if (tipoAuxT5 == Tipos.LITERAL) {
                     str = tipoVariavel + " " + nomeVar + "[80];\n";
-                    saida.append(str);
                 } else {
                     str = tipoVariavel + " " + nomeVar + ";\n";
-                    saida.append(str);
                 }
+                saida.append(indent()).append(str);
             }
         } else {
             escopos.criarNovoEscopo();
-            saida.append("struct {\n");
+            saida.append(indent()).append("struct {\n");
+            indentLevel++;
             for (T5GrammarParser.VariavelContext vctx : ctx.tipo().registro().variavel()) {
                 visitVariavel(vctx);
             }
+            indentLevel--;
             str = "} " + ctx.identificador(0).getText() + ";\n";
-            saida.append(str);
+            saida.append(indent()).append(str);
             escopos.abandonarEscopo();
             escopoAtual.adicionar(ctx.identificador(0).getText(), Tipos.REGISTRO, TiposEntrada.VARIAVEL);
         }
-
         return null;
     }
     
@@ -331,16 +341,20 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
         String tipo, nomeVariaveis;
 
         if (ctx.tipo_estendido() != null) {
-            saida.append(verificaTipoC(ctx.tipo_estendido().getText()));
+            saida.append(indent()).append(verificaTipoC(ctx.tipo_estendido().getText()));
         } else {
-            saida.append("void");
+            saida.append(indent()).append("void");
         }
 
         String str = " " + ctx.IDENT().getText() + "(";
         saida.append(str);
 
         if (ctx.parametros() != null) {
+            int paramCount = 0;
             for (T5GrammarParser.ParametroContext pctx : ctx.parametros().parametro()) {
+                if (paramCount > 0) {
+                    saida.append(", ");
+                }
                 tipo = verificaTipoC(pctx.tipo_estendido().getText());
                 nomeVariaveis = "";
 
@@ -355,10 +369,12 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
                 
                 str = tipo + " " + nomeVariaveis;
                 saida.append(str);
+                paramCount++;
             }
         }
 
         saida.append(") {\n");
+        indentLevel++;
 
         if (ctx.tipo_estendido() != null) {
             escopoAtual.adicionar(ctx.IDENT().getText(), converteTipos(ctx.tipo_estendido().getText()), TiposEntrada.FUNCAO);
@@ -370,9 +386,9 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
             visitCmd(cctx);
         }
 
-        saida.append("}\n");
+        indentLevel--;
+        saida.append(indent()).append("}\n");
         escopos.abandonarEscopo();
-
         return null;
     }
     
@@ -423,7 +439,7 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
      */
     @Override
     public Void visitCmdRetorne(T5GrammarParser.CmdRetorneContext ctx) {
-        saida.append("return ");
+        saida.append(indent()).append("return ");
         super.visitExpressao(ctx.expressao());
         saida.append(";\n");
         return null;
@@ -439,16 +455,13 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
         tabela = escoposAninhados.obterEscopoAtual();
 
         if (ctx.getText().contains("^")) {
-            // Gera atribuição para ponteiro com desreferência
             str = "*" + ctx.identificador().getText() + " = " + ctx.expressao().getText() + ";\n";
         } else if (ctx.identificador().getText().contains(".") && ctx.getText().contains("\"")) {
-            // Usa strcpy para atribuir cadeias em campos de registros
             str = "strcpy(" + ctx.identificador().getText() + "," + ctx.expressao().getText() + ");\n";
         } else {
-            // Atribuição direta para variáveis de tipos básicos
             str = ctx.identificador().getText() + " = " + ctx.expressao().getText() + ";\n";
         }
-        saida.append(str);
+        saida.append(indent()).append(str);
         return null;
     }
     
@@ -459,9 +472,11 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
     @Override
     public Void visitExpressao(T5GrammarParser.ExpressaoContext ctx) {
         if (ctx.termo_logico().size() > 1) {
-            for (T5GrammarParser.Termo_logicoContext termoLogico : ctx.termo_logico()) {
-                saida.append(" || ");
-                visitTermo_logico(termoLogico);
+            for (int i = 0; i < ctx.termo_logico().size(); i++) {
+                if (i > 0) {
+                    saida.append(" || ");
+                }
+                visitTermo_logico(ctx.termo_logico(i));
             }
         } else {
             visitTermo_logico(ctx.termo_logico(0));
@@ -476,9 +491,11 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
     @Override 
     public Void visitTermo_logico(T5GrammarParser.Termo_logicoContext ctx) {
         if (ctx.fator_logico().size() > 1) {
-            for (T5GrammarParser.Fator_logicoContext fatorLogico : ctx.fator_logico()) {
-                saida.append(" && ");
-                visitFator_logico(fatorLogico);
+            for (int i = 0; i < ctx.fator_logico().size(); i++) {
+                if (i > 0) {
+                    saida.append(" && ");
+                }
+                visitFator_logico(ctx.fator_logico(i));
             }
         } else {
             visitFator_logico(ctx.fator_logico(0));
@@ -562,25 +579,26 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
      */
     @Override
     public Void visitCmdSe(T5GrammarParser.CmdSeContext ctx) {
-        // Normaliza operadores lógicos para sintaxe C
         String textoExpressao = ctx.expressao().getText()
             .replace("e", "&&")
             .replace("=", "==");
-        saida.append("if (" + textoExpressao + ") {\n");
+        saida.append(indent()).append("if (" + textoExpressao + ") {\n");
+        indentLevel++;
         
-        // Gera comandos do bloco 'entao'
         for (T5GrammarParser.CmdContext cctx : ctx.cmdEntao) {
             visitCmd(cctx);
         }
-        saida.append("}\n");
+        indentLevel--;
+        saida.append(indent()).append("}\n");
         
-        // Gera bloco 'senao', se presente
         if (!ctx.cmdSenao.isEmpty()) {
-            saida.append("else {\n");
+            saida.append(indent()).append("else {\n");
+            indentLevel++;
             for (T5GrammarParser.CmdContext cctx : ctx.cmdSenao) {
                 visitCmd(cctx);
             }
-            saida.append("}\n");
+            indentLevel--;
+            saida.append(indent()).append("}\n");
         }
         return null;
     }
@@ -602,7 +620,7 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
             } else {
                 str = "scanf(\"%" + codigoTipo + "\",&" + nomeVar + ");\n";
             }
-            saida.append(str);
+            saida.append(indent()).append(str);
         }
         return null;
     }
@@ -613,14 +631,16 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
      */
     @Override
     public Void visitCmdEnquanto(T5GrammarParser.CmdEnquantoContext ctx) {
-        saida.append("while(");
+        saida.append(indent()).append("while(");
         super.visitExpressao(ctx.expressao());
         saida.append(") {\n");
+        indentLevel++;
         
         for (T5GrammarParser.CmdContext cctx : ctx.cmd()) {
             super.visitCmd(cctx);
         }
-        saida.append("}\n");
+        indentLevel--;
+        saida.append(indent()).append("}\n");
         return null;
     }
     
@@ -636,12 +656,14 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
 
         String str = "for(" + nomeVariavel + " = " + limiteEsq + "; " + 
                      nomeVariavel + " <= " + limiteDir + "; " + nomeVariavel + "++) {\n";
-        saida.append(str);
+        saida.append(indent()).append(str);
+        indentLevel++;
 
         for (T5GrammarParser.CmdContext cctx : ctx.cmd()) {
             visitCmd(cctx);
         }
-        saida.append("}\n");
+        indentLevel--;
+        saida.append(indent()).append("}\n");
         return null;
     }
     
@@ -651,11 +673,13 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
      */
     @Override
     public Void visitCmdFaca(T5GrammarParser.CmdFacaContext ctx) {
-        saida.append("do {\n");
+        saida.append(indent()).append("do {\n");
+        indentLevel++;
         for (T5GrammarParser.CmdContext cctx : ctx.cmd()) {
             super.visitCmd(cctx);
         }
-        saida.append("} while(");
+        indentLevel--;
+        saida.append(indent()).append("} while(");
         super.visitExpressao(ctx.expressao());
         saida.append(");\n");
         return null;
@@ -672,15 +696,13 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
         for (T5GrammarParser.ExpressaoContext ectx : ctx.expressao()) {
             String str;
             if (ectx.getText().contains("\"")) {
-                // Imprime cadeia literal sem aspas
                 str = "printf(\"" + ectx.getText().replace("\"", "") + "\");\n";
-                saida.append(str);
             } else {
                 Tipos tipoAuxT5Exp = verificarTipo(escopoAtual, ectx);
                 String codTipoExp = verificaParamTipos(tipoAuxT5Exp);
                 str = "printf(\"%" + codTipoExp + "\", " + ectx.getText() + ");\n";
-                saida.append(str);
             }
+            saida.append(indent()).append(str);
         }
         return null;
     }
@@ -692,7 +714,8 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
     @Override
     public Void visitCmdCaso(T5GrammarParser.CmdCasoContext ctx) {
         String str = "switch (" + ctx.exp_aritmetica().getText() + ") {\n";
-        saida.append(str);
+        saida.append(indent()).append(str);
+        indentLevel++;
 
         for (T5GrammarParser.Item_selecaoContext sctx : ctx.selecao().item_selecao()) {
             String strOriginal = sctx.constantes().numero_intervalo(0).getText();
@@ -708,24 +731,28 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
             if (!sctx.constantes().isEmpty()) {
                 for (int i = Integer.parseInt(limiteEsq); i <= Integer.parseInt(limiteDir); i++) {
                     str = "case " + i + ":\n";
-                    saida.append(str);
+                    saida.append(indent()).append(str);
                 }
             } else {
                 str = "case " + limiteEsq + ":\n";
-                saida.append(str);
+                saida.append(indent()).append(str);
             }
             
+            indentLevel++;
             for (T5GrammarParser.CmdContext cctx : sctx.cmd()) {
                 visitCmd(cctx);
             }
-            saida.append("break;\n");
+            saida.append(indent()).append("break;\n");
+            indentLevel--;
         }
 
-        saida.append("default:\n");
+        saida.append(indent()).append("default:\n");
+        indentLevel++;
         for (T5GrammarParser.CmdContext cctx : ctx.cmd()) {
             visitCmd(cctx);
         }
-        saida.append("}\n");
+        indentLevel--;
+        saida.append(indent()).append("}\n");
         return null;
     }
     
@@ -736,7 +763,7 @@ public class GeradorC extends T5GrammarBaseVisitor<Void> {
     @Override
     public Void visitCmdChamada(T5GrammarParser.CmdChamadaContext ctx) {
         String str = ctx.IDENT().getText() + "(";
-        saida.append(str);
+        saida.append(indent()).append(str);
 
         int cont = 0;
         for (T5GrammarParser.ExpressaoContext ectx : ctx.expressao()) {

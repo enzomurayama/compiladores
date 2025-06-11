@@ -3,10 +3,8 @@
 
 
 int main() {
-char x[80];
-gets(x);
-printf("%s", x);
-
-return 0;
+    char x[80];
+    gets(x);
+    printf("%s", x);
+    return 0;
 }
-Fim da compilacao

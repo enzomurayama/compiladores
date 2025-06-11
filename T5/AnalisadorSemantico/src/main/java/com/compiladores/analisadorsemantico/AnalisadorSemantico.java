@@ -48,6 +48,9 @@ public class AnalisadorSemantico {
                        // Escreve erros semânticos, se houver
             if (!AnalisadorSemanticoUtils.errosSemanticos.isEmpty()) {
                 AnalisadorSemanticoUtils.errosSemanticos.forEach(pw::println);
+                
+                // Finaliza a compilação
+                pw.println("Fim da compilacao");
             } else {
                 // Gera e escreve código C se não houver erros
                 GeradorC agc = new GeradorC();
@@ -60,8 +63,6 @@ public class AnalisadorSemantico {
                 }
             }
 
-            // Finaliza a compilação
-            pw.println("Fim da compilacao");
             pw.flush(); // Garante que todo o conteúdo seja escrito no arquivo 
         } catch(RuntimeException e){
             // Captura exceção gerada pelo ErrorHandler para evitar mensagens duplicadas
