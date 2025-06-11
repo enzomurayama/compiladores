@@ -7,16 +7,16 @@ import static com.compiladores.analisadorsemantico.AnalisadorSemanticoUtils.veri
  */
 public class GeradorC extends T5GrammarBaseVisitor<Void> {
     // Armazena o código C gerado. 
-    private StringBuilder saida = new StringBuilder();
+    StringBuilder saida = new StringBuilder();
     
     // Tabela de símbolos para o escopo global. 
-    private TabelaDeSimbolos tabela = new TabelaDeSimbolos();
+    TabelaDeSimbolos tabela = new TabelaDeSimbolos();
     
     // Gerencia escopos aninhados para declarações e blocos. 
-    private Escopos escopos = new Escopos();
+    Escopos escopos = new Escopos();
     
     // Gerencia escopos aninhados para análise semântica. 
-    private static Escopos escoposAninhados = new Escopos();
+    static Escopos escoposAninhados = new Escopos();
     
     /**
      * Converte um tipo da linguagem T5 para o tipo correspondente em C.

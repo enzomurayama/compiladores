@@ -44,10 +44,25 @@ public class AnalisadorSemantico {
              
             // Tratamento de erros customizados
             // Remove os listeners de erro padrão e adiciona o listener personalizado
-            AnalisadorSemanticoUtils.errosSemanticos.forEach((erro) -> pw.println(erro));
+            // Imprime erros semânticos, se houver
+                       // Escreve erros semânticos, se houver
+            if (!AnalisadorSemanticoUtils.errosSemanticos.isEmpty()) {
+                AnalisadorSemanticoUtils.errosSemanticos.forEach(pw::println);
+            } else {
+                // Gera e escreve código C se não houver erros
+                GeradorC agc = new GeradorC();
+                try {
+                    agc.visitPrograma(arvore);
+                    pw.print(agc.saida.toString());
+                } catch (Exception ex) {
+                    String msg = "Erro ao gerar código C: " + ex.getMessage();
+                    pw.println(msg);
+                }
+            }
+
+            // Finaliza a compilação
             pw.println("Fim da compilacao");
-            pw.close();
-         
+            pw.flush(); // Garante que todo o conteúdo seja escrito no arquivo 
         } catch(RuntimeException e){
             // Captura exceção gerada pelo ErrorHandler para evitar mensagens duplicadas
         } 
