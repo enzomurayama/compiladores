@@ -1,8 +1,8 @@
-# Analisador Semântico pt.2
+# Gerador de Código C
 
-Este projeto implementa um analisador semântico para a **Linguagem Algorítmica**, uma linguagem educacional desenvolvida pelo professor Jander (DC/UFSCar). Ele analisa arquivos de código fonte escritos nessa linguagem e aponta erros semânticos, como uso de variáveis não declaradas, tipos incompatíveis, etc.
+Este projeto implementa um gerador de código em C para a **Linguagem Algorítmica**, uma linguagem educacional desenvolvida pelo professor Jander (DC/UFSCar). Ele analisa arquivos de código fonte escritos nessa linguagem e aponta erros léxicos, sintáticos ou semânticos e para casos onde não há erro, a saída contém o código gerado em C.
 
-Este trabalho é a **parte 4 (T4)** da disciplina de Compiladores e utiliza **ANTLR 4** para geração de analisadores e **Maven** como sistema de build.
+Este trabalho é a **parte 5 (T5)** da disciplina de Compiladores e utiliza **ANTLR 4** para geração de analisadores e **Maven** como sistema de build.
 
 O guia a seguir apresenta os requisitos e as etapas para compilar e executar o projeto corretamente.
 
@@ -44,7 +44,7 @@ Para facilitar o trabalho, abra o projeto com o NetBeans:
 
 - Abra o NetBeans
 - Vá em File > Open Project...
-- Selecione a pasta clonada do repositório com o projeto (compiladores/T4/AnalisadorSemantico) e clique em Open Project.
+- Selecione a pasta clonada do repositório com o projeto (compiladores/T5/AnalisadorSemantico) e clique em Open Project.
 - O NetBeans detectará automaticamente o projeto Maven e configurará as dependências.
 
 <br>
@@ -71,7 +71,7 @@ Para compilar, podemos utilizar a própria ferramenta do NetBeans. Dentro da IDE
 
 **4. Execução**
 
-A execução do analisador semântico utiliza um arquivo de entrada, simulando um programa na Linguagem Algorítmica (desenvolvida pelo prof. Jander, no âmbito do DC/UFSCar), e produz um arquivo de saída, com os erros identificados neste programa.
+A execução utiliza um arquivo de entrada, simulando um programa na Linguagem Algorítmica (desenvolvida pelo prof. Jander, no âmbito do DC/UFSCar), e produz um arquivo de saída, com os erros identificados neste programa ou, em caso de sucesso, o código gerado em C.
 
 Então, em linha de comando:
 
